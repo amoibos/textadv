@@ -7,7 +7,7 @@ def random_value():
 #FinalF characters
 
 
-class Character():
+class NewCharacter():
 
     def __init__(self, playername, npc, level, strengh, vitality,
                     max_vitality, defense, dextery):
@@ -49,6 +49,25 @@ class Character():
         self.base_damage = int(self.strengh + (self.dextery / 3) +
                             (self.combat_experience / 10))
 
+    def improve(self):
+        self.level += 1
+        self.strengh += random_value() + random_value()
+        self.max_vitality += random_value() + random_value()
+        self.defense += random_value() + random_value()
+        self.dextery += random_value() + random_value()
+        self.vitality = self.max_vitality
+
+    def print_attacks(self):
+        for index, obj in self.attacks.items():
+            print(index, obj.name)
+
+    def select_attack(self, choice):
+        if choice in self.attacks.keys() and \
+        self.attacks[choice].cooldown_counter == self.attacks[choice].cooldown:
+            return True
+        else:
+            return False
+
 class Attack():
 
     def __init__(self, name, damage_mod, cooldown, cooldown_counter):
@@ -86,10 +105,5 @@ def random_name():
     return generate_name()
 
 
-def improve(character):
-    character.level += 1
-    character.strengh += random_value() + random_value()
-    character.max_vitality += random_value() + random_value()
-    character.defense += random_value() + random_value()
-    character.dextery += random_value() + random_value()
-    character.vitality = character.max_vitality
+#player = NewCharacter("Dude", False, 1, 10, 100, 10, 15, 100)
+#player.print_attacks()
