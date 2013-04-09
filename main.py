@@ -24,7 +24,7 @@ def main():
             True, 1, 10, 120, 120, 15, 50)
 
             self.round = 1
-            self.state = "running" #  running, over, new
+            self.state = "running"  # running, over, new
 
         #  check if a character has been defeated, initiate new round
         def check_defeated(self):
@@ -33,7 +33,7 @@ def main():
                 self.opponent.name))
                 game.state = "over"
                 return True
-                
+
             elif self.opponent.vitality <= 0:
                 game.round += 1
                 print("{0} has been defeated by {1}, prepare for round {2}"
@@ -42,7 +42,6 @@ def main():
                 game.opponent.improve()
                 game.opponent.name = character.random_name()
                 return True
-
 
         def info(self):
             print("-------------------------------------------------------")
@@ -107,7 +106,7 @@ def main():
         if menu_selection == 1:
             clear()
             game = NewGame()
-            
+
             while True:
                 if game.state == "over":
                     break
@@ -118,32 +117,51 @@ def main():
                 game.print_character_status()
                 game.print_attack_status(game.player)
 
-
-                #  player secene
+                #  PLAYER SCENE
+                #  player attack input
                 selection = game.attack_selection()
-                game.player.attacks[selection].cooldown_counter -= 2
+
+                #  set selected skill on cooldown
+                game.player.attacks[selection].cooldown_counter -= \
+                game.player.attacks[selection].cooldown + 1
+
+                #  damage caluclation
                 damage = ((game.player.attacks[selection].damage_mod +
                     game.player.base_damage) - game.opponent.defense)
+
                 game.opponent.vitality -= damage
+
+                #  text output
                 print("You attacked with a {0} and dealed {1} damage".format(
                     game.player.attacks[selection].name, damage))
 
+                #  set cooldowns
                 game.set_attack_cooldown(game.player)
 
                 if game.check_defeated() is True:
                     continue
-                
-                #  opponent scene
+
+                #  OPPONENT SCENE
+                #  select random attack
                 attack = game.random_attack()
-                game.opponent.attacks[attack].cooldown_counter -= 2
+
+                #  set selected skill on cooldown
+                game.opponent.attacks[attack].cooldown_counter -= \
+                    game.opponent.attacks[attack].cooldown + 1
+
+                #  damage calculation
                 damage = (
-                    (game.opponent.attacks[attack].damage_mod + 
+                    (game.opponent.attacks[attack].damage_mod +
                         game.opponent.base_damage) - game.player.defense)
+
                 game.player.vitality -= damage
+
+                #  text output
                 print("{0} attacked with {1} and dealed {2} damage".format(
                     game.opponent.name, game.opponent.attacks[attack].name,
                     damage))
 
+                #  set cooldowns
                 game.set_attack_cooldown(game.opponent)
 
                 if game.check_defeated() is True:
