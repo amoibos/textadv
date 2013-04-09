@@ -21,7 +21,7 @@ def main():
             False, 1, 10, 100, 100, 15, 100)
 
             self.opponent = character.NewCharacter(character.random_name(),
-            True, 1, 10, 90, 90, 15, 50)
+            True, 1, 10, 120, 120, 15, 50)
 
             self.round = 1
             self.state = "running" #  running, over, new
@@ -31,7 +31,9 @@ def main():
             if self.player.vitality <= 0:
                 print("{0} has been defeated by {1}".format(self.player.name,
                 self.opponent.name))
+                game.state = "over"
                 return True
+                
             elif self.opponent.vitality <= 0:
                 game.round += 1
                 print("{0} has been defeated by {1}, prepare for round {2}"
@@ -85,6 +87,15 @@ def main():
                     return selection
                 else:
                     continue
+
+        def set_attack_cooldown(self, character):
+            # setting cooldowns
+            for obj in character.attacks.values():
+                if obj.cooldown_counter < obj.cooldown:
+                    obj.cooldown_counter += 1
+                else:
+                    continue
+
     while True:
 
         print("""
@@ -98,6 +109,11 @@ def main():
             game = NewGame()
             
             while True:
+                if game.state == "over":
+                    break
+                else:
+                    pass
+
                 game.info()
                 game.print_character_status()
                 game.print_attack_status(game.player)
@@ -112,12 +128,10 @@ def main():
                 print("You attacked with a {0} and dealed {1} damage".format(
                     game.player.attacks[selection].name, damage))
 
+                game.set_attack_cooldown(game.player)
+
                 if game.check_defeated() is True:
                     continue
-
-                x = input("hit enter to continue")
-
-                game.print_character_status()
                 
                 #  opponent scene
                 attack = game.random_attack()
@@ -130,21 +144,11 @@ def main():
                     game.opponent.name, game.opponent.attacks[attack].name,
                     damage))
 
+                game.set_attack_cooldown(game.opponent)
+
                 if game.check_defeated() is True:
                     continue
 
-                clear()
-                game.info()
-                game.print_character_status()
-                game.print_attack_status(game.player)
-
-                # setting cooldowns
-                for obj in itertools.chain(game.player.attacks.values(),
-                    game.opponent.attacks.values()):
-                    if obj.cooldown_counter < obj.cooldown:
-                        obj.cooldown_counter += 1
-                    else:
-                        continue
                 x = input("hit enter to continue")
                 clear()
             print("game over: 1")
