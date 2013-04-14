@@ -1,4 +1,3 @@
-import character
 import random
 import itertools
 import os
