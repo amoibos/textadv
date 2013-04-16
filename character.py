@@ -11,6 +11,11 @@ class Character():
     def __init__(self, playername, npc, level, strength, vitality,
                     max_vitality, defense, dextery):
 
+
+        """ set_attacks fills self.attacks with attack instance objects 
+        set_attacks iterates over self.learned_abilitys which contains
+        a list of dicts, each dict contains attack informations"""
+
         def set_attacks(self):
             self.attacks = {}
             for index, obj in enumerate(self.learned_attacks):
@@ -24,6 +29,7 @@ class Character():
         self.npc = npc
         self.name = playername
         self.level = level  # base value 1
+        self.current_attack_id = None
 
         # character status values
         self.strength = strength  # base value 10
@@ -40,25 +46,27 @@ class Character():
         self.learned_attacks = (punch, kick, metalfist, beamcanon, gundam_support)
         # list contains pre defined attacks (dicts)
         self.attacks = set_attacks(self)
-        self.abilitys = ["heal", "paralyze", "invisible"]  # some ability ideas
-        # not implemented yet
 
         # base damage
         self.base_damage = int(self.strength + (self.dextery / 3) +
                             (self.combat_experience / 10))
 
-        # set_attacks fills self.attacks with attack instance objects 
-        # set_attacks iterates over self.learned_abilitys which contains
-        # a list of dicts, each dict contains attack informations
-
-
-
+    # character gets improved after each round, if he collected enough exp the
+    # character reaches a new level and retrieves 5 attribute points which he 
+    # can set
     def improve(self):
         self.strength += random_value() + random_value()
         self.max_vitality += random_value() + random_value()
         self.defense += random_value() + random_value()
         self.dextery += random_value() + random_value()
         self.vitality = self.max_vitality
+        self.exp += 50
+
+        if self.exp >= self.exp_levelup:
+            self.exp -= self.exp_levelup
+            self.exp_levelup += 20
+            self.attribute_points += 5
+            self.level += 1
 
     #  index is the key of the attacks in the list of dicts "attacks"
     def print_attack_status(self):
@@ -68,41 +76,69 @@ class Character():
                 attack.cooldown))
 
     def character_status(self):
-        return("""
-            Name: {0}
-            Vitality: {1}/{2}""".format(
-                self.name, self.vitality,
-                self.max_vitality))
+        return("\tName: {0} \t Vitality: {1}/{2}".format(
+            self.name, self.vitality, self.max_vitality))
 
+    def details(self, game_round):
+        print("\n\tName: {0} \t\t Level: {1}".format(self.name, self.level))
+        print("\tExp: {0}/{1} \t\t Round:".format(self.exp,
+            self.exp_levelup, game_round))
+        print("\n\t1: Strength: {0} \t 2: Vitality: {1}".format(
+            self.strength, self.max_vitality))
+        print("\t3: Dextery: {0} \t 4: Defense: {1}\n".format(self.dextery,
+            self.defense))
+
+    # print all attacks with "id, name"
     def print_attacks(self):
         for index, obj in self.attacks.items():
             print(index, obj.name)
 
+    #  if the selected attack is usable set it to "self.current_attack"
     def select_attack(self, choice):
-        if choice in self.attacks.keys() and \
-        self.attacks[choice].cooldown_counter == self.attacks[choice].cooldown:
+        if choice in self.attacks.keys() and self.attacks[choice].is_usable():
+            self.current_attack_id = choice
             return True
         else:
             return False
 
-    #  write all ready skills in "available" and randomly pick on of them
+    #  write all usable skills in "available" and randomly pick on of them
     def random_attack(self):
         available = []
         for index, attack in self.attacks.items():
-            if attack.cooldown_counter == attack.cooldown:
+            if attack.is_usable():
                 available.append(index)
-        return random.choice(available)
+        self.current_attack_id = random.choice(available)
 
-    def set_attack_cooldown(self, attack):
-            self.attacks[attack].cooldown_counter -= \
-            self.attacks[attack].cooldown + 1
+    # set the selected attack on cooldown
+    def set_attack_cooldown(self):
+        self.attacks[self.current_attack_id].set_cooldown()
 
-    def reduce_attack_cooldown(self):
-        # reducing cooldowns
-        for obj in self.attacks.values():
-            if obj.cooldown_counter < obj.cooldown:
-                obj.cooldown_counter += 1
+    # reduce all attacks cooldown for 1
+    def reduce_attack_cooldowns(self):
+        for attack_obj in self.attacks.values():
+            attack_obj.reduce_cooldown()
 
+    # check if character is defeated
+    def defeated(self):
+        if self.vitality <= 0:
+            return True
+        else:
+            return False
+
+    # calculates damage: attack damge + character base damage
+    def attack(self):
+        return (self.attacks[self.current_attack_id].damage()
+            + self.base_damage)
+
+    # returns value of defense attribute
+    def defend(self):
+        return self.defense
+
+    def current_attack_name(self):
+        return self.attacks[self.current_attack_id].attack_name()        
+    
+    def reduce_vitality(self, damage):
+        self.vitality -= damage
 
 class Attack():
 
@@ -112,8 +148,27 @@ class Attack():
         self.cooldown = cooldown
         self.cooldown_counter = cooldown_counter
 
+    def reduce_cooldown(self):
+        if self.cooldown_counter < self.cooldown:
+            self.cooldown_counter += 1
+
+    def set_cooldown(self):
+        self.cooldown_counter -= self.cooldown + 1
+
+    def is_usable(self):
+        if self.cooldown >= self.cooldown_counter:
+            return True
+        else:
+            False
+
+    def attack_name(self):
+        return self.name
+
+    def damage(self):
+        return self.damage_mod
+
 # attack information source
-# later will be loaded from a file
+# later will be loaded from a file or something like that..
 
 punch = {"name": "Punch", "damage_mod": 10, "cooldown": 1,
         "cooldown_counter": 1}
