@@ -1,44 +1,39 @@
 import character
 
-class Game():
+
+class CreateGame():
     def __init__(self):
-        self.player = character.Character("Dude", 
+        self.player = character.Character("Dude",
             False, 1, 10, 100, 100, 15, 100)
 
-        self.opponent = character.Character(character.random_name(), 
+        self.opponent = character.Character(character.random_name(),
             True, 1, 10, 120, 120, 15, 50)
 
         self.round = 1
-        self.state = "running" 
+        self.state = "running"
 
-    #  check if a character has been defeated, initiate new round
-    def defeated(self):
-        if self.player.vitality <= 0:
+    # check if a character has been defeated, initiate new round or return to
+    # main menu
+    def battle_end(self):
+        if self.player.defeated() is True:
             print("{0} has been defeated by {1}".format(self.player.name,
                 self.opponent.name))
             self.state = "over"
             return True
 
-        elif self.opponent.vitality <= 0:
+        elif self.opponent.defeated() is True:
             self.round += 1
+
             print("{0} has been defeated by {1}, prepare for round {2}"
                 .format(self.opponent.name, self.player.name, self.round))
-            
+
             self.player.improve()
-            self.player.exp += 50
-
-            #  check player exp
-            if self.player.exp >= self.player.exp_levelup:
-                self.player.exp -= self.player.exp_levelup
-                self.player.exp_levelup += 20
-                self.player.attribute_points += 5
-                self.player.level += 1
-
             self.opponent.improve()
             self.opponent.name = character.random_name()
             self.state = "newround"
             return True
 
+    # prints some "horizontal" infos about the current game
     def info(self):
         print("\t==========================================================")
         print("Round: {0} | Game state: {1} | Player: {2} | Opponent: {3}"
@@ -46,47 +41,38 @@ class Game():
             self.opponent.name))
         print("\t__________________________________________________________\n")
 
-    def damage_calc(self, attack):
-                return((self.player.attacks[attack].damage_mod +
-                    self.player.base_damage) - self.opponent.defense)
+    # calculates damge, attack - defense
+    def damage_calc(self, npc):
+        if npc is False:
+                return self.player.attack() - self.opponent.defend()
+        elif npc is True:
+            return self.opponent.attack() - self.player.defend()
+        else:
+            print("Error in function damage_calc")
 
-
-    # ask player for attack input, check input, check cooldowns
-    def attack_selection(self):
+    # ask player for attack input, check input if usable
+    def user_attack_selection(self):
         while True:
-            while True:
-                try:
-                    selection = int(input("Attack:"))
-                    break
-                except ValueError:
-                    print("Wrong input, enter a number")
-            if self.player.select_attack(selection) is True:
-                return selection
-            else:
-                continue
+            try:
+                selection = int(input("Attack:"))
+                if self.player.select_attack(selection):
+                    return True
+                elif selection == 1337:
+                    self.player.reduce_attack_cooldowns()
+            except ValueError:
+                print("Enter a number")
 
-    def character_menu(self):
-        print("""
-            Name: {0} \t Level: {1}
-            Round: {2} \t Points: {3}
-            \tExp:{4}/{5}""".format(self.player.name,
-                self.player.level, self.round,
-                self.player.attribute_points, self.player.exp,
-                self.player.exp_levelup))
+    def character_menu(self):  # need to be improved
+        self.player.details(self.round)
 
-        print("\n What you want to improve?")
-        print("""
-            1: Strength: {0} \t 2: Vitality: {1}
-            3: Dextery: {2} \t 4: Defense: {3}
-            \t\t5: exit\n""".format(self.player.strength,
-                self.player.max_vitality, self.player.dextery,
-                self.player.defense))
         while True:
             if self.player.attribute_points >= 5:
                 try:
                     char_menu_input = int(input("Char attribute:"))
                 except ValueError:
-                    print("Enter a number")                            
+                    print("Enter a number")
+                except KeyboardInterrupt:
+                    print("Enter a number")
                 if char_menu_input == 1:
                     self.player.strength += 5
                     self.player.attribute_points -= 5
@@ -108,8 +94,31 @@ class Game():
                 else:
                     print("Select from 1 - 5")
             else:
-                print("No points left")
+                print("\t\tNo points left\n")
                 break
 
-    def save(self):
-        pass
+    def battle_sequence(self):
+
+        # player battle sequence
+        self.player.print_attack_status()
+        self.user_attack_selection()
+        self.player.set_attack_cooldown()
+        # if player is attacking, npc = False, means its not an npc
+        damage = self.damage_calc(False)
+        self.opponent.reduce_vitality(damage)
+        print("You attacked with a {0} and dealed {1} damage".format(
+            self.player.current_attack_name(), damage))
+        self.player.reduce_attack_cooldowns()
+        if self.battle_end() is True:
+            return False
+
+        # opponent battle sequence
+        self.opponent.random_attack()
+        self.opponent.set_attack_cooldown()
+        damage = self.damage_calc(True)
+        self.player.reduce_vitality(damage)
+        print("{0} attacked you with a {1} and did {2} damage to you".format(
+            self.opponent.name, self.opponent.current_attack_name(), damage))
+        self.opponent.reduce_attack_cooldowns()
+        if self.battle_end() is True:
+            return False
