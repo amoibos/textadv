@@ -60,8 +60,6 @@ class Menu():
                     print("Problem with saving game")  # need to improve this
             elif self.mID == 4:
                 sys.exit(0)
-
-
 #  main menu
 m_new_game = Menu(1, "New game", "main")
 m_load_game = Menu(2, "Load game", "main")
@@ -76,7 +74,6 @@ m_exit_game = Menu(4, "Exit game", "battle")
 
 m_battle_menu = {1:m_battle, 2:m_character, 3:m_save_game, 4:m_exit_game}
 
-
 # clear display win/linux
 def clear():
     if platform.system() == "Linux":
@@ -86,8 +83,6 @@ def clear():
 
 def pause():
     input("Hit any key to continue")
-
-
 
 #  asks user for input, menu_section is the "input label"
 def user_input(menu_section):
@@ -100,7 +95,6 @@ def user_input(menu_section):
                 return user_data
         except ValueError:
             print("Only numbers")
-
 
 #run a instance of GameCreate, display "ingame" menu
 def run_game(Game):
@@ -115,7 +109,6 @@ def run_game(Game):
             if m_battle_menu[game_menu].command_battle(Game):
                 break
 
-
         while True:  # battle sequence
             Game.info()
             print(Game.player.print_character_status())
@@ -128,7 +121,6 @@ def run_game(Game):
             clear()
     print("\t---GAME OVER---")
     pause()
-
 
 # main menu, creates or loads a game instance
 def main():
