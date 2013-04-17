@@ -5,6 +5,35 @@ def random_value():
 
 #FinalF characters
 
+class Attribute():
+    def __init__(self, atr_ID, atr_value, atr_name):
+        self.atr_ID = atr_ID
+        self.atr_value = atr_value
+        self.atr_name = atr_name
+
+    def name(self):
+        return(self.atr_name)
+
+    def value(self):
+        return(self.atr_value)
+
+    def ID(self):
+        return(self.atr_ID)
+
+    def reduce(self, amount):
+        self.atr_value -= amount
+
+    def improve(self):
+        self.atr_value += 5
+
+    def improve_for_newround(self):
+        self.atr_value += random_value() + random_value()
+
+    def is_ID(self, possible_id):
+        if self.atr_ID == possible_id:
+            return True
+        else:
+            return False
 
 class Character():
 
@@ -32,15 +61,15 @@ class Character():
         self.current_attack_id = None
 
         # character status values
-        self.strength = strength  # base value 10
-        self.vitality = vitality  # base value 100
-        self.max_vitality = max_vitality  # base value 100
-        self.defense = defense  # base value 5
-        self.dextery = dextery  # base value 15
+        self.strength = Attribute(1, 10, "Strength")  # base value 10
+        self.vitality = Attribute(2, 100, "Vitality")  # base value 100
+        self.max_vitality = Attribute(3, 100, "Vitality")  # base val 100
+        self.defense = Attribute(4, 5, "defense")  # base value 5
+        self.dextery = Attribute(5, 15, "dextery")  # base value 15
         self.combat_experience = 100  # base value 100
-        self.exp = 0
+        self.exp = 70
         self.exp_levelup = 100
-        self.attribute_points = 0
+        self.attribute_points = 5
 
         # current abilitys
         self.learned_attacks = (punch, kick, metalfist, beamcanon, gundam_support)
@@ -48,18 +77,18 @@ class Character():
         self.attacks = set_attacks(self)
 
         # base damage
-        self.base_damage = int(self.strength + (self.dextery / 3) +
+        self.base_damage = int(self.strength.value() + (self.dextery.value() / 3) +
                             (self.combat_experience / 10))
 
     # character gets improved after each round, if he collected enough exp the
     # character reaches a new level and retrieves 5 attribute points which he 
     # can set
     def improve(self):
-        self.strength += random_value() + random_value()
-        self.max_vitality += random_value() + random_value()
-        self.defense += random_value() + random_value()
-        self.dextery += random_value() + random_value()
-        self.vitality = self.max_vitality
+        self.strength.improve_for_newround()
+        self.max_vitality.improve_for_newround()
+        self.defense.improve_for_newround()
+        self.dextery.improve_for_newround()
+        self.vitality.atr_value = self.max_vitality.value()
         self.exp += 50
 
         if self.exp >= self.exp_levelup:
@@ -68,6 +97,13 @@ class Character():
             self.attribute_points += 5
             self.level += 1
 
+    def macro_attributes(self):
+        return(self.strength, self.max_vitality, self.defense, self.dextery)
+
+    def improve_attribute(self, obj):
+        self.attribute_points = 0
+        obj.improve()
+
     #  index is the key of the attacks in the list of dicts "attacks"
     def print_attack_status(self):
         for index, attack in self.attacks.items():
@@ -75,18 +111,18 @@ class Character():
                 index, attack.name, attack.cooldown_counter,
                 attack.cooldown))
 
-    def character_status(self):
+    def print_character_status(self):
         return("\tName: {0} \t Vitality: {1}/{2}".format(
-            self.name, self.vitality, self.max_vitality))
+            self.name, self.vitality.value(), self.max_vitality.value()))
 
     def details(self, game_round):
         print("\n\tName: {0} \t\t Level: {1}".format(self.name, self.level))
         print("\tExp: {0}/{1} \t\t Round:".format(self.exp,
             self.exp_levelup, game_round))
         print("\n\t1: Strength: {0} \t 2: Vitality: {1}".format(
-            self.strength, self.max_vitality))
-        print("\t3: Dextery: {0} \t 4: Defense: {1}\n".format(self.dextery,
-            self.defense))
+            self.strength.value(), self.max_vitality.value()))
+        print("\t3: Dextery: {0} \t 4: Defense: {1}\n".format(self.dextery.value(),
+            self.defense.value()))
 
     # print all attacks with "id, name"
     def print_attacks(self):
@@ -94,7 +130,7 @@ class Character():
             print(index, obj.name)
 
     #  if the selected attack is usable set it to "self.current_attack"
-    def select_attack(self, choice):
+    def select_attack_if_usable(self, choice):
         if choice in self.attacks.keys() and self.attacks[choice].is_usable():
             self.current_attack_id = choice
             return True
@@ -120,7 +156,7 @@ class Character():
 
     # check if character is defeated
     def defeated(self):
-        if self.vitality <= 0:
+        if self.vitality.value() < 1:
             return True
         else:
             return False
@@ -132,13 +168,18 @@ class Character():
 
     # returns value of defense attribute
     def defend(self):
-        return self.defense
+        return self.defense.value()
 
     def current_attack_name(self):
         return self.attacks[self.current_attack_id].attack_name()        
     
+    # damage is the amout vitality will be reduced
     def reduce_vitality(self, damage):
-        self.vitality -= damage
+        self.vitality.reduce(damage)
+
+    def get_attribute_points(self):
+        return self.attribute_points
+
 
 class Attack():
 
@@ -156,7 +197,7 @@ class Attack():
         self.cooldown_counter -= self.cooldown + 1
 
     def is_usable(self):
-        if self.cooldown >= self.cooldown_counter:
+        if self.cooldown_counter == self.cooldown:
             return True
         else:
             False
