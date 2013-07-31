@@ -51,7 +51,7 @@ def msg(box, message_block):
                     # wrap long string into a list of short ones
                     for string in wraped_text:
                         print("{0} {1}".format(box_symbol_side, string))
-                elif type(obj) == tuple or list:  #if obj is tuple go through every tuple       
+                elif type(obj) in (tuple, list):  #if obj is tuple go through every tuple       
                     for phrase in obj:
                         wraped_text = wrapper.wrap(phrase)
                         for string in wraped_text:
