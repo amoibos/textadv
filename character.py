@@ -5,7 +5,7 @@ def random_value():
 
 #FinalF characters
 
-class Attribute():
+class Attribute(object):
     def __init__(self, atr_ID, atr_value, atr_name):
         self.atr_ID = atr_ID
         self.atr_value = atr_value
@@ -30,12 +30,10 @@ class Attribute():
         self.atr_value += random_value() + random_value()
 
     def is_ID(self, possible_id):
-        if self.atr_ID == possible_id:
-            return True
-        else:
-            return False
+        return self.atr_ID == possible_id
+            
 
-class Character():
+class Character(object):
 
     def __init__(self, playername, npc, level, strength, vitality,
                     max_vitality, defense, dextery):
@@ -156,10 +154,7 @@ class Character():
 
     # check if character is defeated
     def defeated(self):
-        if self.vitality.value() < 1:
-            return True
-        else:
-            return False
+        return self.vitality.value() < 1
 
     # calculates damage: attack damge + character base damage
     def attack(self):
@@ -181,7 +176,7 @@ class Character():
         return self.attribute_points
 
 
-class Attack():
+class Attack(object):
 
     def __init__(self, name, damage_mod, cooldown, cooldown_counter):
         self.name = name
@@ -197,10 +192,7 @@ class Attack():
         self.cooldown_counter -= self.cooldown + 1
 
     def is_usable(self):
-        if self.cooldown_counter == self.cooldown:
-            return True
-        else:
-            False
+        return self.cooldown_counter == self.cooldown
 
     def attack_name(self):
         return self.name
