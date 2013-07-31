@@ -5,7 +5,7 @@ from main import pause
 from main import user_input
 
 
-class CreateGame():
+class CreateGame(object):
     def __init__(self):
         self.player = character.Character("Dude",
             False, 1, 10, 100, 100, 15, 100)
@@ -61,12 +61,15 @@ class CreateGame():
         while True:
             try:
                 selection = int(input("Attack:"))
-                if self.player.select_attack_if_usable(selection):
-                    break
-                elif selection == 1337:
-                    self.player.reduce_attack_cooldowns()
             except ValueError:
                 print("Enter a number")
+                continue
+            
+            if self.player.select_attack_if_usable(selection):
+                    break
+            elif selection == 1337:
+                self.player.reduce_attack_cooldowns()
+            
 
     def character_menu(self):  # need to be improved
         #self.player.details(self.round)
@@ -110,7 +113,4 @@ class CreateGame():
         print("{0} attacked you with a {1} and did {2} damage to you".format(
             self.opponent.name, self.opponent.current_attack_name(), damage))
         self.opponent.reduce_attack_cooldowns()
-        if self.battle_end():
-            return False
-        else:
-            return True
+        return not self.battle_end()
