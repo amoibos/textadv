@@ -6,7 +6,7 @@ import pickle
 import game
 import sys
 
-class Menu():
+class Menu(object):
     def __init__(self, mID, mlabel, mtype):
         self.mID = mID  # Number displayed besides "mlabel"
         self.mlabel = mlabel  # for example "New game"
@@ -16,16 +16,10 @@ class Menu():
         print("{0} {1}".format(self.mID, self.mlabel))
 
     def is_main(self):
-        if self.mtype == "main":
-            return True
-        else:
-            return False
+        return self.mtype == "main"
 
     def is_battle(self):
-        if self.mtype == "battle":
-            return True
-        else:
-            return False
+        return self.mtype == "battle"
 
     def command_main(self):
         if self.is_main():
@@ -56,7 +50,7 @@ class Menu():
                         print("Game saved successfull")
                         os.system("pause")
                         clear()
-                except:
+                except pickle.PickleError:
                     print("Problem with saving game")  # need to improve this
             elif self.mID == 4:
                 sys.exit(0)
@@ -76,10 +70,9 @@ m_battle_menu = {1:m_battle, 2:m_character, 3:m_save_game, 4:m_exit_game}
 
 # clear display win/linux
 def clear():
-    if platform.system() == "Linux":
-        os.system("clear")
-    elif platform.system() == "Windows":
-        os.system("cls")
+    os_clear = {"Linux" : "clear", "Windows" : "cls"}
+    
+    os.system(os_clear[platform.system()])
 
 def pause():
     input("Hit any key to continue")
